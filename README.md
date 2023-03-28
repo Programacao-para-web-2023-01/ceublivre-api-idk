@@ -9,8 +9,8 @@ tickets de suporte, recebam respostas e acompanhem o status de suas solicitaçõ
 
 Registrar as solicitações de suporte dos clientes;
 
-* Permitir envio de fotos (1 ponto)
-* Classificar as solicitações com base em sua natureza e gravidade (1 ponto);
+- Permitir envio de fotos (1 ponto)
+- Classificar as solicitações com base em sua natureza e gravidade (1 ponto);
 
 ### Gerenciamento de naturezas (3 pontos)
 
