@@ -1,11 +1,8 @@
 import { Hono } from "hono";
-
-type Bindings = {
-  DB: D1Database;
-};
+import { Bindings } from "~/app";
 
 const app = new Hono<{ Bindings: Bindings }>();
 
-app.get("/", c => c.text("Hello Hono!"));
+app.get("/", c => c.text(":)"));
 
 export default app;
