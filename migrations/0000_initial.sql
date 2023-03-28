@@ -1,0 +1,57 @@
+-- Migration number: 0000 	 2023-03-26T16:25:30.959Z
+
+CREATE TABLE Status (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL UNIQUE
+);
+
+INSERT INTO Status (name)
+  VALUES
+    ('Aberto'),
+    ('Em progresso'),
+    ('Fechado');
+
+CREATE TABLE Priority (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE Ticket (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  message TEXT NOT NULL,
+  userId INTEGER NOT NULL,
+  statusId INTEGER
+    DEFAULT 1
+    REFERENCES Status (id)
+      ON UPDATE CASCADE
+      ON DELETE SET NULL,
+  priorityId INTEGER
+    REFERENCES Priority (id)
+      ON UPDATE CASCADE
+      ON DELETE SET NULL,
+  createdAt NUMERIC
+    DEFAULT CURRENT_TIMESTAMP,
+  closedAt NUMERIC
+);
+
+CREATE TABLE Image (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  ticketId INTEGER NOT NULL
+    REFERENCES Ticket (id)
+      ON UPDATE CASCADE
+      ON DELETE CASCADE,
+  key TEXT UNIQUE
+    DEFAULT (lower(hex(randomblob(8))))
+);
+
+CREATE TABLE Response (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  userId INTEGER NOT NULL,
+  ticketId INTEGER NOT NULL
+    REFERENCES Ticket (id)
+      ON UPDATE CASCADE
+      ON DELETE CASCADE,
+  message TEXT NOT NULL,
+  createdAt NUMERIC
+    DEFAULT CURRENT_TIMESTAMP
+);
