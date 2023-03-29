@@ -1,8 +1,7 @@
 import { Hono } from "hono";
-import { Bindings } from "~/app";
 import { priorities } from "~/routes/priorities";
 
-const app = new Hono<{ Bindings: Bindings }>();
+const app = new Hono();
 
 app.get("/", c => c.text(":)"));
 
