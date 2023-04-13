@@ -2,25 +2,27 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { z } from "zod";
 import { Bindings } from "~/app";
-import { Priority } from "~/models";
 import { HTTPException } from "hono/http-exception";
+import { Ticket } from "~/models";
 
-export const priorities = new Hono<{ Bindings: Bindings }>();
+export const tickets = new Hono<{ Bindings: Bindings }>();
 
-priorities.get("/", async (c) => {
-    const result = Priority.array().parse(
-        (await c.env.DB.prepare("SELECT * FROM Priority").all()).results
+// GET ALL
+tickets.get("/", async (c) => {
+    const result = Ticket.array().parse(
+        (await c.env.DB.prepare("SELECT * FROM Ticket").all()).results
     );
 
     return c.json(result);
 });
 
-priorities.get(
+// GET ID
+tickets.get(
     "/:id",
     zValidator("param", z.object({ id: z.string() })),
     async (c) => {
-        const result = Priority.safeParse(
-            await c.env.DB.prepare("SELECT * FROM Priority WHERE id = ?")
+        const result = Ticket.safeParse(
+            await c.env.DB.prepare("SELECT * FROM Ticket WHERE id = ?")
                 .bind(c.req.valid("param").id)
                 .first()
         );
@@ -31,13 +33,18 @@ priorities.get(
     }
 );
 
-priorities.post("/", zValidator("json", Priority), async (c) => {
+// CREATE
+tickets.post("/", zValidator("json", Ticket), async (c) => {
     try {
-        const result = Priority.parse(
+        const result = Ticket.parse(
             await c.env.DB.prepare(
-                "INSERT INTO Priority (name) VALUES (?) RETURNING *"
+                "INSERT INTO Ticket (message, userId, priorityId) VALUES (?, ?, ?) RETURNING *"
             )
-                .bind(c.req.valid("json").name)
+                .bind(
+                    c.req.valid("json").message,
+                    c.req.valid("json").userId,
+                    c.req.valid("json").priorityId
+                )
                 .first()
         );
 
@@ -45,22 +52,29 @@ priorities.post("/", zValidator("json", Priority), async (c) => {
     } catch (error) {
         // Todo: Handle error message
         throw new HTTPException(500, {
-            res: new Response("Error creating a priority type", { status: 500 }),
+            res: new Response("Error creating a ticket", { status: 500 }),
         });
     }
 });
 
-priorities.put(
+// EDIT
+tickets.put(
     "/:id",
     zValidator("param", z.object({ id: z.string() })),
-    zValidator("json", Priority),
+    zValidator("json", Ticket),
     async (c) => {
         try {
-            const result = Priority.safeParse(
+            const result = Ticket.safeParse(
                 await c.env.DB.prepare(
-                    "UPDATE Priority SET name = ? WHERE id = ? RETURNING *"
+                    "UPDATE Ticket SET message = ?, statusId = ?, priorityId = ? WHERE id = ? RETURNING *"
                 )
-                    .bind(c.req.valid("json").name, c.req.valid("param").id)
+                    .bind(
+                        c.req.valid("json").message,
+                        c.req.valid("json").statusId,
+                        c.req.valid("json").priorityId,
+                        //c.req.valid("json").closedAt,
+                        c.req.valid("param").id
+                    )
                     .first()
             );
 
@@ -78,13 +92,14 @@ priorities.put(
     }
 );
 
-priorities.delete(
+// DELETE
+tickets.delete(
     "/:id",
     zValidator("param", z.object({ id: z.string() })),
     async (c) => {
-        const result = Priority.safeParse(
+        const result = Ticket.safeParse(
             await c.env.DB.prepare(
-                "DELETE FROM Priority WHERE id = ? RETURNING *"
+                "DELETE FROM Ticket WHERE id = ? RETURNING *"
             )
                 .bind(c.req.valid("param").id)
                 .first()
