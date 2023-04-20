@@ -1,8 +1,8 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { z } from "zod";
-import { Bindings } from "~/app";
-import { Priority } from "~/models";
+import { Bindings } from "../app";
+import { Priority } from "../models";
 import { HTTPException } from "hono/http-exception";
 
 export const priorities = new Hono<{ Bindings: Bindings }>();
