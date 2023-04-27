@@ -7,7 +7,7 @@ import { homepage } from "homepage";
 const app = new Hono({ strict: false });
 
 app.use("*", prettyJSON({ space: 4 }));
-app.get("/", (c) => c.html(homepage));
+app.get("/", c => c.html(homepage));
 app.route("/priorities", priorities);
 app.route("/tickets", tickets);
 
