@@ -16,6 +16,25 @@ tickets.get("/", async c => {
   return c.json(result);
 });
 
+// GET PRIORITY
+tickets.get(
+  "/priority/:priorityName",
+  zValidator("param", z.object({ priorityName: z.string() })),
+  async c => {
+    const result = Ticket.array().parse(
+      (
+        await c.env.DB.prepare(
+          "SELECT * FROM Ticket INNER JOIN Priority ON Ticket.priorityId = Priority.id WHERE Priority.name = ?;"
+        )
+          .bind(c.req.valid("param").priorityName)
+          .all()
+      ).results
+    );
+
+    return c.json(result);
+  }
+);
+
 // GET ID
 tickets.get(
   "/:id",
