@@ -35,6 +35,25 @@ tickets.get(
   }
 );
 
+// GET STATUS
+tickets.get(
+  "/status/:statusName",
+  zValidator("param", z.object({ statusName: z.string() })),
+  async c => {
+    const result = Ticket.array().parse(
+      (
+        await c.env.DB.prepare(
+          "SELECT * FROM Ticket INNER JOIN Status ON Ticket.statusId = Status.id WHERE Status.name = ?;"
+        )
+          .bind(c.req.valid("param").statusName)
+          .all()
+      ).results
+    );
+
+    return c.json(result);
+  }
+);
+
 // GET ID
 tickets.get(
   "/:id",
