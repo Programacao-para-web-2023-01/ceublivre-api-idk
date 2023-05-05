@@ -5,6 +5,7 @@ import { tickets } from "./routes/tickets";
 import { prettyJSON } from "hono/pretty-json";
 import { Bindings } from "./app";
 import { homepage } from "./routes/homepage";
+import { response } from "./routes/response";
 
 const app = new Hono<{ Bindings: Bindings }>({ strict: false });
 
@@ -17,5 +18,6 @@ app.use("*", (c, next) => {
 app.get("/", c => c.html(homepage));
 app.route("/priorities", priorities);
 app.route("/tickets", tickets);
+app.route("/response", response)
 
 export default app;
