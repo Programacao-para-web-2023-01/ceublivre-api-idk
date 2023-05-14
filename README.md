@@ -1,4 +1,4 @@
-# CeubLivre-API
+# CeubLivre - API
 
 ## Suporte ao cliente
 
@@ -7,22 +7,21 @@ tickets de suporte, recebam respostas e acompanhem o status de suas solicitaçõ
 
 ### Solicitações (1 pontos)
 
-Registrar as solicitações de suporte dos clientes;
-
-- Permitir envio de fotos (1 ponto)
-- Classificar as solicitações com base em sua natureza e gravidade (1 ponto);
+- [ ] Registrar as solicitações de suporte dos clientes;
+  - [ ] Permitir envio de fotos (1 ponto)
+  - [x] Classificar as solicitações com base em sua natureza e gravidade (1 ponto);
 
 ### Gerenciamento de naturezas (3 pontos)
 
-Permitir que os administradores cadastrem, alterem e excluem tipos de solicitações.
+- [x] Permitir que os administradores cadastrem, alterem e excluam tipos de solicitações.
 
 ### Respostas (2 pontos)
 
-Permitir que os administradores do sistema respondam às solicitações e encaminhem para os vendedores caso seja
-necessário.
+- [x] Permitir que os administradores do sistema respondam às solicitações.
+- [ ] Permitir que os administradores do sitema encaminhem as solicitações para os vendedores.
 
 ### Notificações (4 pontos)
 
-Enviar emails aos usuários com atualizações de status das solicitações.
+- [ ] Enviar emails aos usuários com atualizações de status das solicitações.
 
 **Total: 12 pontos**
