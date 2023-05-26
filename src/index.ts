@@ -18,6 +18,6 @@ app.use("*", (c, next) => {
 app.get("/", c => c.html(homepage));
 app.route("/priorities", priorities);
 app.route("/tickets", tickets);
-app.route("/response", response)
+app.route("/response", response);
 
 export default app;
