@@ -1,10 +1,10 @@
 {
   "scripts": {
-    "dev": "wrangler dev src/index.ts",
-    "migrate:dev": "wrangler d1 migrations apply ceublivre-api-idk --local",
-    "migrate": "wrangler d1 migrations apply ceublivre-api-idk",
+    "dev": "wrangler -j dev src/index.ts",
+    "migrate:dev": "wrangler -j d1 migrations apply ceublivre-api-idk --local",
+    "migrate": "wrangler -j d1 migrations apply ceublivre-api-idk",
     "prettier": "prettier --write .",
-    "deploy": "wrangler publish src/index.ts"
+    "deploy": "wrangler -j publish src/index.ts"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.1.2",
