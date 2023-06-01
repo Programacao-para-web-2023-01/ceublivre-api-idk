@@ -26,7 +26,7 @@ export const Image = z.object({
   key: z.string().optional(),
 });
 
-export const Response = z.object({
+export const Reply = z.object({
   id: z.number().optional(),
   userId: z.number(),
   ticketId: z.number(),
