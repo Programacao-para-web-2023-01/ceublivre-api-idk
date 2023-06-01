@@ -1,10 +1,11 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
-import { z } from "zod";
+import { string, z } from "zod";
 import { Bindings } from "../app";
 import { HTTPException } from "hono/http-exception";
 import { Ticket } from "../models";
 import { apiResponse } from "@/lib/api";
+import { mail } from "@/lib/mail";
 
 export const tickets = new Hono<{ Bindings: Bindings }>();
 
@@ -91,36 +92,48 @@ tickets.post("/", async c => {
   return apiResponse.success({
     c,
     status: 201,
-    message: "Ticket criado com sucesso",
     data: result,
   });
 });
 
 // EDIT
-tickets.put(
-  "/:id",
-  zValidator("param", z.object({ id: z.string() })),
-  zValidator("json", Ticket),
-  async c => {
-    const result = Ticket.safeParse(
-      await c.env.DB.prepare(
-        "UPDATE Ticket SET message = ?, statusId = ?, priorityId = ? WHERE id = ? RETURNING *"
-      )
-        .bind(
-          c.req.valid("json").message,
-          c.req.valid("json").statusId,
-          c.req.valid("json").priorityId,
-          //c.req.valid("json").closedAt,
-          c.req.valid("param").id
-        )
-        .first()
-    );
+tickets.put("/:id", async c => {
+  const { id } = await c.req.param();
 
-    if (!result.success) return c.notFound();
+  const { message, statusId, priorityId } = Ticket.parse(await c.req.json());
 
-    return c.json(result.data, 201);
+  const resultOld = Ticket.safeParse(
+    await c.env.DB.prepare("SELECT * FROM Ticket WHERE id = ?").bind(id).first()
+  );
+
+  if (!resultOld.success) return c.notFound();
+
+  const result = Ticket.safeParse(
+    await c.env.DB.prepare(
+      "UPDATE Ticket SET message = ?, statusId = ?, priorityId = ? WHERE id = ? RETURNING *"
+    )
+      .bind(message, statusId, priorityId, id)
+      .first()
+  );
+
+  if (!result.success) return c.notFound();
+
+  if (resultOld.data.priorityId !== result.data.priorityId) {
+    await mail({
+      c,
+      to: [{ email: "teste@teste.com", name: "teste" }],
+      subject: "teste",
+      text: "teste",
+    });
   }
-);
+
+  return apiResponse.success({
+    c,
+    status: 201,
+    message: "O ticket foi atualizado",
+    data: result.data,
+  });
+});
 
 // DELETE
 tickets.delete(
