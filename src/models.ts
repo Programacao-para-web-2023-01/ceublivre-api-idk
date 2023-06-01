@@ -7,7 +7,10 @@ export const Status = z.object({
 
 export const Priority = z.object({
   id: z.number().optional(),
-  name: z.string(),
+  name: z.string({
+    required_error: "O campo name é obrigatório",
+    invalid_type_error: "O tipo do campo name deve ser string",
+  }),
 });
 
 export const Ticket = z.object({
