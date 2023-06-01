@@ -1,4 +1,4 @@
-import { Context } from "hono";
+import type { Context } from "hono";
 
 interface To {
   email: string;
@@ -12,7 +12,7 @@ interface MailOptions {
   text: string;
 }
 
-export default async function mail({ c, to, subject, text }: MailOptions) {
+export async function mail({ c, to, subject, text }: MailOptions) {
   const msg = {
     personalizations: [
       {
@@ -20,9 +20,20 @@ export default async function mail({ c, to, subject, text }: MailOptions) {
         subject,
       },
     ],
-    content: [{ type: "text/plain", value: { text } }],
-    from: { email: "ceublivre@lucaspinheiro.dev", name: "CeubLivre" },
-    reply_to: { email: "ceublivre@lucaspinheiro.dev", name: "CeubLivre" },
+    content: [
+      {
+        type: "text/plain",
+        value: { text },
+      },
+    ],
+    from: {
+      email: "ceublivre@lucaspinheiro.dev",
+      name: "CeubLivre",
+    },
+    reply_to: {
+      email: "ceublivre@lucaspinheiro.dev",
+      name: "CeubLivre",
+    },
   };
 
   const response = await fetch("https://api.sendgrid.com/v3/mail/send", {

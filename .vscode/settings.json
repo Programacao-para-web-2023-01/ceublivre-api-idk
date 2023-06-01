@@ -1,4 +1,11 @@
 {
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
   "editor.formatOnSave": true,
-  "editor.defaultFormatter": "esbenp.prettier-vscode"
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "files.associations": {
+    ".dev.vars": "properties",
+    ".dev.vars.example": "properties",
+    ".env.example": "properties"
+  }
 }
