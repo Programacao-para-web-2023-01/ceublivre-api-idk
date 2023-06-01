@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "dev": "wrangler dev src/index.ts --local --persist",
+    "dev": "wrangler dev src/index.ts",
     "migrate:dev": "wrangler d1 migrations apply ceublivre-api-idk --local",
     "migrate": "wrangler d1 migrations apply ceublivre-api-idk",
     "prettier": "prettier --write .",
@@ -8,13 +8,13 @@
   },
   "dependencies": {
     "@hono/zod-validator": "^0.1.2",
-    "hono": "^3.1.0",
+    "hono": "^3.2.3",
     "zod": "^3.21.4"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20230321.0",
-    "better-sqlite3": "^8.2.0",
+    "@cloudflare/workers-types": "^4.20230518.0",
+    "better-sqlite3": "^8.4.0",
     "prettier": "2.8.8",
-    "wrangler": "^2.7.1"
+    "wrangler": "^3.0.1"
   }
 }
