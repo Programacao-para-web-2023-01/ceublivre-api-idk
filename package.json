@@ -4,7 +4,7 @@
     "migrate:dev": "wrangler -j d1 migrations apply ceublivre-api-idk --local",
     "migrate": "wrangler -j d1 migrations apply ceublivre-api-idk",
     "prettier": "prettier --write .",
-    "deploy": "wrangler -j publish src/index.ts"
+    "deploy": "wrangler -j deploy src/index.ts"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.1.2",
