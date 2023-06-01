@@ -3,7 +3,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { Bindings } from "../app";
 import { Priority } from "../models";
-import { HTTPException } from "hono/http-exception";
+import { apiResponse } from "@/lib/api";
 
 export const priorities = new Hono<{ Bindings: Bindings }>();
 
@@ -12,7 +12,10 @@ priorities.get("/", async c => {
     (await c.env.DB.prepare("SELECT * FROM Priority").all()).results
   );
 
-  return c.json(result);
+  return apiResponse.success({
+    c,
+    data: result,
+  });
 });
 
 priorities.get(
@@ -27,56 +30,51 @@ priorities.get(
 
     if (!result.success) return c.notFound();
 
-    return c.json(result.data);
-  }
-);
-
-priorities.post("/", zValidator("json", Priority), async c => {
-  try {
-    const result = Priority.parse(
-      await c.env.DB.prepare(
-        "INSERT INTO Priority (name) VALUES (?) RETURNING *"
-      )
-        .bind(c.req.valid("json").name)
-        .first()
-    );
-
-    return c.json(result, 201);
-  } catch (error) {
-    // Todo: Handle error message
-    throw new HTTPException(500, {
-      res: new Response("Error creating a priority type", { status: 500 }),
+    return apiResponse.success({
+      c,
+      data: result.data,
     });
   }
+);
+
+priorities.post("/", async c => {
+  const { name } = Priority.parse(await c.req.json());
+
+  const result = Priority.parse(
+    await c.env.DB.prepare("INSERT INTO Priority (name) VALUES (?) RETURNING *")
+      .bind(name)
+      .first()
+  );
+
+  return apiResponse.success({
+    c,
+    status: 201,
+    message: "Priority criada com sucesso",
+    data: result,
+  });
 });
 
-priorities.put(
-  "/:id",
-  zValidator("param", z.object({ id: z.string() })),
-  zValidator("json", Priority),
-  async c => {
-    try {
-      const result = Priority.safeParse(
-        await c.env.DB.prepare(
-          "UPDATE Priority SET name = ? WHERE id = ? RETURNING *"
-        )
-          .bind(c.req.valid("json").name, c.req.valid("param").id)
-          .first()
-      );
+priorities.put("/:id", async c => {
+  const { id } = await c.req.param();
+  const { name } = Priority.parse(await c.req.json());
 
-      if (!result.success) return c.notFound();
+  const result = Priority.safeParse(
+    await c.env.DB.prepare(
+      "UPDATE Priority SET name = ? WHERE id = ? RETURNING *"
+    )
+      .bind(name, id)
+      .first()
+  );
 
-      return c.json(result.data, 201);
-    } catch (error) {
-      // Todo: Handle error message
-      throw new HTTPException(500, {
-        res: new Response("Error updating an existing priority", {
-          status: 500,
-        }),
-      });
-    }
-  }
-);
+  if (!result.success) return c.notFound();
+
+  return apiResponse.success({
+    c,
+    status: 200,
+    message: "Priority atualizada com sucesso",
+    data: result.data,
+  });
+});
 
 priorities.delete(
   "/:id",

@@ -4,95 +4,96 @@ import { z } from "zod";
 import { Bindings } from "../app";
 import { HTTPException } from "hono/http-exception";
 import { Ticket } from "../models";
+import { apiResponse } from "@/lib/api";
 
 export const tickets = new Hono<{ Bindings: Bindings }>();
 
-// GET ALL
+// GET All
 tickets.get("/", async c => {
   const result = Ticket.array().parse(
     (await c.env.DB.prepare("SELECT * FROM Ticket").all()).results
   );
 
-  return c.json(result);
+  return apiResponse.success({
+    c,
+    data: result,
+  });
 });
 
-// GET PRIORITY
-tickets.get(
-  "/priority/:priorityName",
-  zValidator("param", z.object({ priorityName: z.string() })),
-  async c => {
-    const result = Ticket.array().parse(
-      (
-        await c.env.DB.prepare(
-          "SELECT * FROM Ticket INNER JOIN Priority ON Ticket.priorityId = Priority.id WHERE Priority.name = ?;"
-        )
-          .bind(c.req.valid("param").priorityName)
-          .all()
-      ).results
-    );
+// GET Ticket
+tickets.get("/priority/:priorityName", async c => {
+  const { priorityName } = await c.req.param();
 
-    return c.json(result);
-  }
-);
+  const result = Ticket.array().parse(
+    (
+      await c.env.DB.prepare(
+        "SELECT * FROM Ticket INNER JOIN Priority ON Ticket.priorityId = Priority.id WHERE Priority.name = ?;"
+      )
+        .bind(priorityName)
+        .all()
+    ).results
+  );
 
-// GET STATUS
-tickets.get(
-  "/status/:statusName",
-  zValidator("param", z.object({ statusName: z.string() })),
-  async c => {
-    const result = Ticket.array().parse(
-      (
-        await c.env.DB.prepare(
-          "SELECT * FROM Ticket INNER JOIN Status ON Ticket.statusId = Status.id WHERE Status.name = ?;"
-        )
-          .bind(c.req.valid("param").statusName)
-          .all()
-      ).results
-    );
+  return apiResponse.success({
+    c,
+    data: result,
+  });
+});
 
-    return c.json(result);
-  }
-);
+// GET Status
+tickets.get("/status/:statusName", async c => {
+  const { statusName } = await c.req.param();
 
-// GET ID
-tickets.get(
-  "/:id",
-  zValidator("param", z.object({ id: z.string() })),
-  async c => {
-    const result = Ticket.safeParse(
-      await c.env.DB.prepare("SELECT * FROM Ticket WHERE id = ?")
-        .bind(c.req.valid("param").id)
-        .first()
-    );
+  const result = Ticket.array().parse(
+    (
+      await c.env.DB.prepare(
+        "SELECT * FROM Ticket INNER JOIN Status ON Ticket.statusId = Status.id WHERE Status.name = ?;"
+      )
+        .bind(statusName)
+        .all()
+    ).results
+  );
 
-    if (!result.success) return c.notFound();
+  return apiResponse.success({
+    c,
+    data: result,
+  });
+});
 
-    return c.json(result.data);
-  }
-);
+// GET Id
+tickets.get("/:id", async c => {
+  const { id } = await c.req.param();
+
+  const result = Ticket.safeParse(
+    await c.env.DB.prepare("SELECT * FROM Ticket WHERE id = ?").bind(id).first()
+  );
+
+  if (!result.success) return c.notFound();
+
+  return apiResponse.success({
+    c,
+    data: result,
+  });
+});
 
 // CREATE
-tickets.post("/", zValidator("json", Ticket), async c => {
-  try {
-    const result = Ticket.parse(
-      await c.env.DB.prepare(
-        "INSERT INTO Ticket (message, userId, priorityId) VALUES (?, ?, ?) RETURNING *"
-      )
-        .bind(
-          c.req.valid("json").message,
-          c.req.valid("json").userId,
-          c.req.valid("json").priorityId
-        )
-        .first()
-    );
+tickets.post("/", async c => {
+  const { message, userId, priorityId } = Ticket.parse(await c.req.json());
 
-    return c.json(result, 201);
-  } catch (error) {
-    // Todo: Handle error message
-    throw new HTTPException(500, {
-      res: new Response("Error creating a ticket", { status: 500 }),
-    });
-  }
+  const result = Ticket.parse(
+    await c.env.DB.prepare(
+      "INSERT INTO Ticket (message, userId, priorityId) VALUES (?, ?, ?) RETURNING *"
+    )
+      .bind(message, userId, priorityId)
+      .first()
+  );
+
+  return apiResponse.success({
+    c,
+    status: 201,
+    message: "Ticket criado com sucesso",
+    data: result,
+  });
 });
 
 // EDIT
@@ -101,32 +102,23 @@ tickets.put(
   zValidator("param", z.object({ id: z.string() })),
   zValidator("json", Ticket),
   async c => {
-    try {
-      const result = Ticket.safeParse(
-        await c.env.DB.prepare(
-          "UPDATE Ticket SET message = ?, statusId = ?, priorityId = ? WHERE id = ? RETURNING *"
+    const result = Ticket.safeParse(
+      await c.env.DB.prepare(
+        "UPDATE Ticket SET message = ?, statusId = ?, priorityId = ? WHERE id = ? RETURNING *"
+      )
+        .bind(
+          c.req.valid("json").message,
+          c.req.valid("json").statusId,
+          c.req.valid("json").priorityId,
+          //c.req.valid("json").closedAt,
+          c.req.valid("param").id
         )
-          .bind(
-            c.req.valid("json").message,
-            c.req.valid("json").statusId,
-            c.req.valid("json").priorityId,
-            //c.req.valid("json").closedAt,
-            c.req.valid("param").id
-          )
-          .first()
-      );
+        .first()
+    );
 
-      if (!result.success) return c.notFound();
+    if (!result.success) return c.notFound();
 
-      return c.json(result.data, 201);
-    } catch (error) {
-      // Todo: Handle error message
-      throw new HTTPException(500, {
-        res: new Response("Error updating an existing priority", {
-          status: 500,
-        }),
-      });
-    }
+    return c.json(result.data, 201);
   }
 );
 

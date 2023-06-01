@@ -9,25 +9,19 @@ export const response = new Hono<{ Bindings: Bindings }>();
 
 // CREATE
 response.post("/", zValidator("json", Reply), async c => {
-  try {
-    const result = Reply.parse(
-      await c.env.DB.prepare(
-        "INSERT INTO Response (userId, ticketId, message) VALUES (?) RETURNING *"
+  const result = Reply.parse(
+    await c.env.DB.prepare(
+      "INSERT INTO Response (userId, ticketId, message) VALUES (?) RETURNING *"
+    )
+      .bind(
+        c.req.valid("json").userId,
+        c.req.valid("json").ticketId,
+        c.req.valid("json").message
       )
-        .bind(
-          c.req.valid("json").userId,
-          c.req.valid("json").ticketId,
-          c.req.valid("json").message
-        )
-        .first()
-    );
+      .first()
+  );
 
-    return c.json(result, 201);
-  } catch (error) {
-    // Todo: Handle error message
-    // Tod: rename table Response
-    return c.text("Error creating a response");
-  }
+  return c.json(result, 201);
 });
 
 // DELETE

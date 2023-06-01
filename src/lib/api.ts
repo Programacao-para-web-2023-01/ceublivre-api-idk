@@ -18,7 +18,7 @@ interface SuccessApiResponseProps extends BaseApiResponseProps {
 }
 
 interface ErrorApiResponseProps extends BaseApiResponseProps {
-  error: Error | ZodError;
+  error: Error | ZodError | unknown;
 }
 
 export const apiResponse = {
@@ -33,6 +33,8 @@ export const apiResponse = {
   },
 
   error({ c, status = 500, error }: ErrorApiResponseProps) {
+    if (!(error instanceof Error)) return new Response();
+
     const messages =
       error instanceof ZodError
         ? error.errors.map(zodError => zodError.message)
