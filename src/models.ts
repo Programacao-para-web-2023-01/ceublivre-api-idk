@@ -14,9 +14,9 @@ export const Category = z.object({
 export const Ticket = z.object({
   id: z.number(modelError("id", "number")).optional(),
   message: z.string(modelError("message", "string")),
-  userId: z.number(modelError("userId", "number")),
-  statusId: z.number(modelError("statusId", "number")).optional(),
-  categoryId: z.number(modelError("categoryId", "number")).optional(),
+  userId: z.number(modelError("userId", "number")).optional(),
+  statusId: z.number(modelError("statusId", "number")),
+  categoryId: z.number(modelError("categoryId", "number")),
   createdAt: z.coerce.date(modelError("createdAt", "date")).optional(),
   closedAt: z.coerce.date(modelError("closedAt", "date")).optional(),
 });
@@ -29,7 +29,7 @@ export const Image = z.object({
 
 export const Reply = z.object({
   id: z.number(modelError("id", "number")).optional(),
-  userId: z.number(modelError("userId", "number")),
+  userId: z.number(modelError("userId", "number")).optional(),
   ticketId: z.number(modelError("ticketId", "number")),
   message: z.string(modelError("message", "string")),
   createdAt: z.coerce.date(modelError("createdAt", "date")).optional(),

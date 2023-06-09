@@ -84,7 +84,9 @@ ticketRouter.get("/:id", async c => {
 
 // POST Create ticket
 ticketRouter.post("/", async c => {
-  const { message, userId, categoryId } = Ticket.parse(await c.req.json());
+  const { message, categoryId } = Ticket.parse(await c.req.json());
+
+  const userId = 1;
 
   const ticket = Ticket.parse(
     await c.env.DB.prepare(
