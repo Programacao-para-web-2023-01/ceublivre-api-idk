@@ -21,7 +21,7 @@ interface ErrorApiResponseProps extends BaseApiResponseProps {
   error: Error | ZodError | unknown;
 }
 
-export const apiResponse = {
+export const ApiResponse = {
   success({ c, status = 200, message, data = {} }: SuccessApiResponseProps) {
     const payload: ApiPayload = {
       success: true,

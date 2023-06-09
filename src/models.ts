@@ -5,7 +5,7 @@ export const Status = z.object({
   name: z.string(),
 });
 
-export const Priority = z.object({
+export const Category = z.object({
   id: z.number().optional(),
   name: z.string({
     required_error: "O campo name é obrigatório",
@@ -18,7 +18,7 @@ export const Ticket = z.object({
   message: z.string(),
   userId: z.number(),
   statusId: z.number().optional(),
-  priorityId: z.number().optional(),
+  categoryId: z.number().optional(),
   createdAt: z.coerce.date().optional(),
   closedAt: z.coerce.date().optional(),
 });

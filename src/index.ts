@@ -1,11 +1,10 @@
 import { Hono } from "hono";
 import { jwt } from "hono/jwt";
-import { priorities } from "./routes/priorities";
-import { tickets } from "./routes/tickets";
+import { categoryRouter } from "./routes/category";
+import { ticketRouter } from "./routes/ticket";
 import { prettyJSON } from "hono/pretty-json";
 import { Bindings } from "./app";
-import { response } from "./routes/response";
-import { apiResponse } from "./lib/api";
+import { ApiResponse } from "./lib/api";
 
 const app = new Hono<{ Bindings: Bindings }>({ strict: false });
 
@@ -16,12 +15,11 @@ app.use("*", (c, next) => {
 });
 
 app.onError((error, c) => {
-  return apiResponse.error({ c, error });
+  return ApiResponse.error({ c, error });
 });
 
-app.get("/", c => c.body("🫖", 418));
-app.route("/priorities", priorities);
-app.route("/tickets", tickets);
-app.route("/response", response);
+app.get("/", c => c.body("🍵", 418));
+app.route("/category", categoryRouter);
+app.route("/ticket", ticketRouter);
 
 export default app;
