@@ -1,10 +1,11 @@
 import { Hono } from "hono";
 import { jwt } from "hono/jwt";
-import { categoryRouter } from "./routes/category";
-import { ticketRouter } from "./routes/ticket";
+import { categoryRouter } from "@/routes/category";
+import { ticketRouter } from "@/routes/ticket";
 import { prettyJSON } from "hono/pretty-json";
-import { Bindings } from "./app";
-import { ApiResponse } from "./lib/api";
+import { Bindings } from "@/app";
+import { ApiResponse } from "@/lib/api";
+import { statusRouter } from "@/routes/status";
 
 const app = new Hono<{ Bindings: Bindings }>({ strict: false });
 
@@ -19,6 +20,7 @@ app.onError((error, c) => {
 });
 
 app.get("/", c => c.body("🍵", 418));
+app.route("/status", statusRouter);
 app.route("/category", categoryRouter);
 app.route("/ticket", ticketRouter);
 
