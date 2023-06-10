@@ -6,12 +6,37 @@ import { mail } from "@/lib/mail";
 
 export const ticketRouter = new Hono<{ Bindings: Bindings }>();
 
-// GET All tickets
+// GET All tickets with optional filter
 ticketRouter.get("/", async c => {
-  // const { status, category } = c.req.query();
+  const { status, category } = c.req.query();
+
+  const query = {
+    select: `
+      SELECT Ticket.*
+      FROM Ticket
+      INNER JOIN Status
+        ON Ticket.statusId = Status.id
+      INNER JOIN Category
+        ON Ticket.categoryId = Category.id
+    `,
+    where: [
+      status !== undefined ? "Status.id = ?" : undefined,
+      category !== undefined ? "Category.id = ?" : undefined,
+    ].filter(x => x !== undefined),
+    bind: [status, category].filter(x => x !== undefined),
+  };
+
+  const whereClause = query.where.length
+    ? ` WHERE ${query.where.join(" AND ")}`
+    : "";
+  const rawQuery = query.select + whereClause;
 
   const tickets = Ticket.array().parse(
-    (await c.env.DB.prepare("SELECT * FROM Ticket").all()).results
+    (
+      await c.env.DB.prepare(rawQuery)
+        .bind(...query.bind)
+        .all()
+    ).results
   );
 
   return ApiResponse.success({
@@ -19,46 +44,6 @@ ticketRouter.get("/", async c => {
     data: tickets,
   });
 });
-
-// // GET Ticket
-// ticketRouter.get("/priority/:priorityName", async c => {
-//   const { priorityName } = await c.req.param();
-
-//   const result = Ticket.array().parse(
-//     (
-//       await c.env.DB.prepare(
-//         "SELECT * FROM Ticket INNER JOIN Priority ON Ticket.priorityId = Priority.id WHERE Priority.name = ?;"
-//       )
-//         .bind(priorityName)
-//         .all()
-//     ).results
-//   );
-
-//   return apiResponse.success({
-//     c,
-//     data: result,
-//   });
-// });
-
-// // GET Status
-// ticketRouter.get("/status/:statusName", async c => {
-//   const { statusName } = await c.req.param();
-
-//   const result = Ticket.array().parse(
-//     (
-//       await c.env.DB.prepare(
-//         "SELECT * FROM Ticket INNER JOIN Status ON Ticket.statusId = Status.id WHERE Status.name = ?;"
-//       )
-//         .bind(statusName)
-//         .all()
-//     ).results
-//   );
-
-//   return apiResponse.success({
-//     c,
-//     data: result,
-//   });
-// });
 
 // GET Ticket by id
 ticketRouter.get("/:id", async c => {
