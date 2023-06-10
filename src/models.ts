@@ -30,7 +30,7 @@ export const Image = z.object({
 export const Reply = z.object({
   id: z.number(modelError("id", "number")).optional(),
   userId: z.number(modelError("userId", "number")).optional(),
-  ticketId: z.number(modelError("ticketId", "number")),
+  ticketId: z.number(modelError("ticketId", "number")).optional(),
   message: z.string(modelError("message", "string")),
   createdAt: z.coerce.date(modelError("createdAt", "date")).optional(),
 });

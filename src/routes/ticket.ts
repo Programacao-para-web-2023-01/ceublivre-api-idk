@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { Bindings } from "@/app";
-import { Ticket } from "@/models";
+import { Reply, Ticket } from "@/models";
 import { ApiResponse } from "@/lib/api";
 import { mail } from "@/lib/mail";
 
@@ -99,6 +99,7 @@ ticketRouter.post("/", async c => {
   return ApiResponse.success({
     c,
     status: 201,
+    message: "Ticket criado com sucesso",
     data: ticket,
   });
 });
@@ -133,7 +134,7 @@ ticketRouter.put("/:id", async c => {
     return ApiResponse.error({
       c,
       status: 404,
-      error: new Error("Ticket não encontrado"),
+      error: new Error("Ocorreu um erro ao atualizar o ticket"),
     });
   }
 
@@ -174,4 +175,63 @@ ticketRouter.delete("/:id", async c => {
   }
 
   return c.body(null, 204);
+});
+
+// Replies
+
+// GET All replies by ticket id
+ticketRouter.get("/:ticketId/reply", async c => {
+  const { ticketId } = c.req.param();
+
+  const ticket = Ticket.safeParse(
+    await c.env.DB.prepare("SELECT * FROM Ticket WHERE Ticket.id = ?")
+      .bind(ticketId)
+      .first()
+  );
+
+  if (!ticket.success) {
+    return ApiResponse.error({
+      c,
+      status: 404,
+      error: new Error("Ticket não encontrado"),
+    });
+  }
+
+  const replies = Reply.array().parse(
+    (
+      await c.env.DB.prepare(
+        "SELECT Reply.* FROM Reply INNER JOIN Ticket ON Reply.ticketId = Ticket.id WHERE Ticket.id = ?"
+      )
+        .bind(ticketId)
+        .all()
+    ).results
+  );
+
+  return ApiResponse.success({
+    c,
+    data: replies,
+  });
+});
+
+// POST Create reply by ticket id
+ticketRouter.post("/:ticketId/reply", async c => {
+  const { ticketId } = c.req.param();
+  const { message } = Reply.parse(await c.req.json());
+
+  const userId = 1;
+
+  const reply = Reply.parse(
+    await c.env.DB.prepare(
+      "INSERT INTO Reply (ticketId, message, userId) VALUES (?, ?, ?) RETURNING *"
+    )
+      .bind(ticketId, message, userId)
+      .first()
+  );
+
+  return ApiResponse.success({
+    c,
+    status: 201,
+    message: "Resposta criada com sucesso",
+    data: reply,
+  });
 });
