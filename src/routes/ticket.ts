@@ -81,6 +81,14 @@ ticketRouter.post("/", async c => {
       .first()
   );
 
+  // Send e-mail
+  // await mail({
+  //   c,
+  //   to: [{ email: "email@example.com", name: "Example" }],
+  //   subject: "Novo ticket",
+  //   text: "Ticket criado com sucesso",
+  // });
+
   return ApiResponse.success({
     c,
     status: 201,
@@ -89,11 +97,9 @@ ticketRouter.post("/", async c => {
   });
 });
 
-// PUT Update ticket by id
-ticketRouter.put("/:id", async c => {
+// GET Closes the ticket
+ticketRouter.get("/:id/close", async c => {
   const { id } = c.req.param();
-
-  const { message, statusId, categoryId } = Ticket.parse(await c.req.json());
 
   const ticket = Ticket.safeParse(
     await c.env.DB.prepare("SELECT * FROM Ticket WHERE id = ?").bind(id).first()
@@ -109,29 +115,23 @@ ticketRouter.put("/:id", async c => {
 
   const updatedTicket = Ticket.safeParse(
     await c.env.DB.prepare(
-      "UPDATE Ticket SET message = ?, statusId = ?, categoryId = ? WHERE id = ? RETURNING *"
+      "UPDATE Ticket SET statusId = 3 WHERE id = ? RETURNING *"
     )
-      .bind(message, statusId, categoryId, id)
+      .bind(id)
       .first()
   );
 
   if (!updatedTicket.success) {
-    return ApiResponse.error({
-      c,
-      status: 404,
-      error: new Error("Ocorreu um erro ao atualizar o ticket"),
-    });
+    throw new Error("Ocorreu um erro ao atualizar o status do ticket");
   }
 
   // Send e-mail
-  if (ticket.data.categoryId !== updatedTicket.data.categoryId) {
-    await mail({
-      c,
-      to: [{ email: "teste@teste.com", name: "teste" }],
-      subject: "teste",
-      text: "teste",
-    });
-  }
+  // await mail({
+  //   c,
+  //   to: [{ email: "email@example.com", name: "Example" }],
+  //   subject: "Atualização do ticket",
+  //   text: "O status do seu ticket foi alterado para: Resolvido",
+  // });
 
   return ApiResponse.success({
     c,
@@ -205,6 +205,26 @@ ticketRouter.post("/:ticketId/reply", async c => {
 
   const userId = 1;
 
+  const ticket = Ticket.safeParse(
+    await c.env.DB.prepare("SELECT * FROM Ticket WHERE Ticket.id = ?")
+      .bind(ticketId)
+      .first()
+  );
+
+  if (!ticket.success) {
+    return ApiResponse.error({
+      c,
+      status: 404,
+      error: new Error("Ticket não encontrado"),
+    });
+  }
+
+  if (ticket.data.statusId === 3) {
+    throw new Error(
+      "Não é possível responder um ticket com status de resolvido"
+    );
+  }
+
   const reply = Reply.parse(
     await c.env.DB.prepare(
       "INSERT INTO Reply (ticketId, message, userId) VALUES (?, ?, ?) RETURNING *"
@@ -212,6 +232,28 @@ ticketRouter.post("/:ticketId/reply", async c => {
       .bind(ticketId, message, userId)
       .first()
   );
+
+  if (ticket.data.statusId === 1) {
+    const updatedTicket = Ticket.safeParse(
+      await c.env.DB.prepare(
+        "UPDATE Ticket SET statusId = 2 WHERE id = ? RETURNING *"
+      )
+        .bind()
+        .first()
+    );
+
+    if (!updatedTicket.success) {
+      throw new Error("Ocorreu um erro ao atualizar o status do ticket");
+    }
+
+    // Send e-mail
+    // await mail({
+    //   c,
+    //   to: [{ email: "email@example.com", name: "Example" }],
+    //   subject: "Atualização do ticket",
+    //   text: "O status do seu ticket foi alterado para: Em progresso",
+    // });
+  }
 
   return ApiResponse.success({
     c,
