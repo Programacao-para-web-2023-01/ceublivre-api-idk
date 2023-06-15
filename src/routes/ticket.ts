@@ -63,7 +63,7 @@ ticketRouter.get("/:id", async c => {
 
   return ApiResponse.success({
     c,
-    data: ticket,
+    data: ticket.data,
   });
 });
 
