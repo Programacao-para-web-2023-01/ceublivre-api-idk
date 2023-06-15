@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { modelError } from "@/lib/model-error";
 
+// Database
+
 export const Status = z.object({
   id: z.number(modelError("id", "number")).optional(),
   name: z.string(modelError("name", "string")),
@@ -33,4 +35,14 @@ export const Reply = z.object({
   ticketId: z.number(modelError("ticketId", "number")).optional(),
   message: z.string(modelError("message", "string")),
   createdAt: z.coerce.date(modelError("createdAt", "date")).optional(),
+});
+
+// App
+
+export const JwtPayload = z.object({
+  id: z.string(modelError("id", "string")).optional(),
+  email: z
+    .string(modelError("email", "number"))
+    .email("Formato de e-mail inválido"),
+  role: z.string(modelError("role", "string")).default("user"),
 });

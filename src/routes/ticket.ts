@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { Bindings } from "@/app";
-import { Reply, Ticket } from "@/models";
+import { JwtPayload, Reply, Ticket } from "@/models";
 import { ApiResponse } from "@/lib/api";
 import { mail } from "@/lib/mail";
 
@@ -71,13 +71,13 @@ ticketRouter.get("/:id", async c => {
 ticketRouter.post("/", async c => {
   const { message, categoryId } = Ticket.parse(await c.req.json());
 
-  const userId = 1;
+  const { id } = JwtPayload.parse(c.get("jwtPayload"));
 
   const ticket = Ticket.parse(
     await c.env.DB.prepare(
       "INSERT INTO Ticket (message, userId, categoryId) VALUES (?, ?, ?) RETURNING *"
     )
-      .bind(message, userId, categoryId)
+      .bind(message, id, categoryId)
       .first()
   );
 
@@ -203,7 +203,7 @@ ticketRouter.post("/:ticketId/reply", async c => {
   const { ticketId } = c.req.param();
   const { message } = Reply.parse(await c.req.json());
 
-  const userId = 1;
+  const { id } = JwtPayload.parse(c.get("jwtPayload"));
 
   const ticket = Ticket.safeParse(
     await c.env.DB.prepare("SELECT * FROM Ticket WHERE Ticket.id = ?")
@@ -229,7 +229,7 @@ ticketRouter.post("/:ticketId/reply", async c => {
     await c.env.DB.prepare(
       "INSERT INTO Reply (ticketId, message, userId) VALUES (?, ?, ?) RETURNING *"
     )
-      .bind(ticketId, message, userId)
+      .bind(ticketId, message, id)
       .first()
   );
 
