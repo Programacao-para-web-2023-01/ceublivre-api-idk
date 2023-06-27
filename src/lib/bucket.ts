@@ -58,12 +58,6 @@ export class Bucket {
 
     const imageExt = file.name.split(".").reverse()[0];
 
-    const hashBuffer = await crypto.subtle.digest(
-      "SHA-1",
-      await file.arrayBuffer()
-    );
-    const hash = new TextDecoder().decode(hashBuffer);
-
     const res = await fetch(uploadUrl, {
       method: "post",
       headers: {
