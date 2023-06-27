@@ -267,3 +267,30 @@ ticketRouter.post("/:ticketId/reply", async c => {
     data: reply,
   });
 });
+
+// GET Image by ticket id
+ticketRouter.get("/:id/image", async c => {
+  const { id } = c.req.param();
+
+  const ticket = Ticket.safeParse(
+    await c.env.DB.prepare("SELECT * FROM Ticket WHERE id = ?").bind(id).first()
+  );
+
+  if (!ticket.success) {
+    return ApiResponse.error({
+      c,
+      status: 404,
+      error: new Error("Ticket não encontrado"),
+    });
+  }
+
+  if (!ticket.data.imageFileId) {
+    throw new Error("Este ticket não possui imagem");
+  }
+
+  const bucket = new Bucket(c);
+
+  const blob = await bucket.download(ticket.data.imageFileId);
+
+  return c.body(await blob.arrayBuffer());
+});

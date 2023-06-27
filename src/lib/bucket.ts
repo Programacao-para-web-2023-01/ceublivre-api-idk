@@ -79,4 +79,23 @@ export class Bucket {
 
     return B2UploadFile.parse(await res.json());
   }
+
+  async download(fileId: string) {
+    const { downloadUrl, authorizationToken } = await this.fetchApiUrl();
+
+    const query = new URLSearchParams({ fileId });
+
+    const res = await fetch(
+      `${downloadUrl}/b2api/v2/b2_download_file_by_id?${query.toString()}`,
+      {
+        headers: {
+          Authorization: authorizationToken,
+        },
+      }
+    );
+
+    if (!res.ok) throw new Error("Erro ao buscar o arquivo");
+
+    return await res.blob();
+  }
 }
