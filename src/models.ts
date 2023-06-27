@@ -20,7 +20,7 @@ export const Ticket = z.object({
   message: z.string(modelError("message", "string")),
   imageFileId: z.string(modelError("imageFileId", "string")).optional(),
   userId: z.string(modelError("userId", "string")).optional(),
-  statusId: z.coerce.number(modelError("statusId", "number")),
+  statusId: z.coerce.number(modelError("statusId", "number")).optional(),
   categoryId: z.coerce.number(modelError("categoryId", "number")),
   createdAt: z.coerce.date(modelError("createdAt", "date")).optional(),
   closedAt: z.coerce.date(modelError("closedAt", "date")).optional(),
