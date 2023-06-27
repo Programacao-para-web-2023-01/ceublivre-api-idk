@@ -3,6 +3,7 @@ import { Bindings } from "@/app";
 import { JwtPayload, Reply, Ticket } from "@/models";
 import { ApiResponse } from "@/lib/api";
 import { mail } from "@/lib/mail";
+import { Bucket } from "@/lib/bucket";
 
 export const ticketRouter = new Hono<{ Bindings: Bindings }>();
 
@@ -69,15 +70,19 @@ ticketRouter.get("/:id", async c => {
 
 // POST Create ticket
 ticketRouter.post("/", async c => {
-  const { message, categoryId } = Ticket.parse(await c.req.json());
+  const { message, categoryId, image } = Ticket.parse(await c.req.parseBody());
 
   const { id } = JwtPayload.parse(c.get("jwtPayload"));
 
+  const bucket = new Bucket(c);
+
+  const { fileId } = await bucket.upload(image!);
+
   const ticket = Ticket.parse(
     await c.env.DB.prepare(
-      "INSERT INTO Ticket (message, userId, categoryId) VALUES (?, ?, ?) RETURNING *"
+      "INSERT INTO Ticket (message, imageFileId, userId, categoryId) VALUES (?, ?, ?, ?) RETURNING *"
     )
-      .bind(message, id, categoryId)
+      .bind(message, fileId, id, categoryId)
       .first()
   );
 

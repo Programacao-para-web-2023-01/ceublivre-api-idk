@@ -25,6 +25,7 @@ app.use("*", async (c, next) => {
 });
 
 app.onError((error, c) => {
+  console.error(error);
   return ApiResponse.error({ c, error });
 });
 
