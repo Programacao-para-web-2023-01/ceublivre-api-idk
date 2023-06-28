@@ -1,3 +1,4 @@
+import { Bindings } from "@/app";
 import type { Context } from "hono";
 
 interface To {
@@ -6,34 +7,30 @@ interface To {
 }
 
 interface MailOptions {
-  c: Context;
+  c: Context<{ Bindings: Bindings }>;
   to: To[];
   subject: string;
-  text: string;
+  content: string;
 }
 
-export async function mail({ c, to, subject, text }: MailOptions) {
+export async function mail({ c, to, subject, content }: MailOptions) {
   const msg = {
-    personalizations: [
-      {
-        to,
-        subject,
-      },
-    ],
-    content: [
-      {
-        type: "text/plain",
-        value: { text },
-      },
-    ],
     from: {
       email: "ceublivre@lucaspinheiro.dev",
       name: "CeubLivre",
     },
-    reply_to: {
-      email: "ceublivre@lucaspinheiro.dev",
-      name: "CeubLivre",
-    },
+    personalizations: [
+      {
+        to,
+      },
+    ],
+    subject,
+    content: [
+      {
+        type: "text/plain",
+        value: content,
+      },
+    ],
   };
 
   const response = await fetch("https://api.sendgrid.com/v3/mail/send", {

@@ -72,7 +72,7 @@ ticketRouter.get("/:id", async c => {
 ticketRouter.post("/", async c => {
   const { message, categoryId, image } = Ticket.parse(await c.req.parseBody());
 
-  const { id } = JwtPayload.parse(c.get("jwtPayload"));
+  const { id, email } = JwtPayload.parse(c.get("jwtPayload"));
 
   const bucket = new Bucket(c);
 
@@ -87,12 +87,12 @@ ticketRouter.post("/", async c => {
   );
 
   // Send e-mail
-  // await mail({
-  //   c,
-  //   to: [{ email: "email@example.com", name: "Example" }],
-  //   subject: "Novo ticket",
-  //   text: "Ticket criado com sucesso",
-  // });
+  await mail({
+    c,
+    to: [{ email, name: email.split("@")[0] }],
+    subject: "Novo ticket",
+    content: "Ticket criado com sucesso",
+  });
 
   return ApiResponse.success({
     c,
@@ -130,13 +130,15 @@ ticketRouter.get("/:id/close", async c => {
     throw new Error("Ocorreu um erro ao atualizar o status do ticket");
   }
 
+  const email = updatedTicket.data.userId?.split("|")[1] ?? "";
+
   // Send e-mail
-  // await mail({
-  //   c,
-  //   to: [{ email: "email@example.com", name: "Example" }],
-  //   subject: "Atualização do ticket",
-  //   text: "O status do seu ticket foi alterado para: Resolvido",
-  // });
+  await mail({
+    c,
+    to: [{ email, name: email.split("@")[0] }],
+    subject: "Atualização do ticket",
+    content: "O status do seu ticket foi alterado para: Resolvido",
+  });
 
   return ApiResponse.success({
     c,
@@ -251,13 +253,15 @@ ticketRouter.post("/:ticketId/reply", async c => {
       throw new Error("Ocorreu um erro ao atualizar o status do ticket");
     }
 
+    const email = updatedTicket.data.userId?.split("|")[1] ?? "";
+
     // Send e-mail
-    // await mail({
-    //   c,
-    //   to: [{ email: "email@example.com", name: "Example" }],
-    //   subject: "Atualização do ticket",
-    //   text: "O status do seu ticket foi alterado para: Em progresso",
-    // });
+    await mail({
+      c,
+      to: [{ email, name: email.split("@")[0] }],
+      subject: "Atualização do ticket",
+      content: "O status do seu ticket foi alterado para: Em progresso",
+    });
   }
 
   return ApiResponse.success({
