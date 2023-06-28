@@ -76,7 +76,7 @@ ticketRouter.post("/", async c => {
 
   const bucket = new Bucket(c);
 
-  const { fileId } = await bucket.upload(image!);
+  const fileId = image ? (await bucket.upload(image)).fileId : "";
 
   const ticket = Ticket.parse(
     await c.env.DB.prepare(
