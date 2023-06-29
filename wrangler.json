@@ -5,7 +5,7 @@
     {
       "binding": "DB",
       "database_name": "ceublivre-api-idk",
-      "database_id": "a543c599-ee53-4c77-97b7-7ed240071e12",
+      "database_id": "5a75296b-f03c-456b-bbf9-84af59753e3d",
       "migrations_dir": "src/migrations"
     }
   ]
