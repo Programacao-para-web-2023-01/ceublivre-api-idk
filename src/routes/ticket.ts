@@ -32,13 +32,19 @@ ticketRouter.get("/", async c => {
     : "";
   const rawQuery = query.select + whereClause;
 
-  const tickets = Ticket.array().parse(
+  let tickets = Ticket.array().parse(
     (
       await c.env.DB.prepare(rawQuery)
         .bind(...query.bind)
         .all()
     ).results
   );
+
+  const { email, role } = JwtPayload.parse(c.get("jwtPayload"));
+
+  if (role === "user") {
+    tickets = tickets.filter(ticket => ticket.userId === `${role}|${email}`);
+  }
 
   return ApiResponse.success({
     c,
