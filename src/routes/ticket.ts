@@ -245,7 +245,7 @@ ticketRouter.post("/:ticketId/reply", async c => {
       await c.env.DB.prepare(
         "UPDATE Ticket SET statusId = 2 WHERE id = ? RETURNING *"
       )
-        .bind()
+        .bind(ticketId)
         .first()
     );
 
